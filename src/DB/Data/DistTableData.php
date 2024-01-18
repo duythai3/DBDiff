@@ -32,9 +32,9 @@ class DistTableData {
         $diffSequence = [];
         foreach ($diffs as $name => $diff) {
             if ($diff['diff'] instanceof \Diff\DiffOp\DiffOpRemove) {
-                $diffSequence[] = new DeleteData($table, $diff);
+                //$diffSequence[] = new DeleteData($table, $diff);
             } else if (is_array($diff['diff'])) {
-                $diffSequence[] = new UpdateData($table, $diff);
+                //$diffSequence[] = new UpdateData($table, $diff);
             } else if ($diff['diff'] instanceof \Diff\DiffOp\DiffOpAdd) {
                 $diffSequence[] = new InsertData($table, $diff);
             }

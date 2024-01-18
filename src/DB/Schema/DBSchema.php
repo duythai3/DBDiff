@@ -16,7 +16,7 @@ class DBSchema {
     function __construct($manager) {
         $this->manager = $manager;
     }
-    
+
     function getDiff() {
         $params = ParamsFactory::get();
 
@@ -36,7 +36,7 @@ class DBSchema {
         if ($sourceCharset !== $targetCharset) {
             $diffs[] = new SetDBCharset($dbName, $sourceCharset, $targetCharset);
         }
-        
+
         // Tables
         $tableSchema = new TableSchema($this->manager);
 
@@ -59,10 +59,12 @@ class DBSchema {
             $diffs = array_merge($diffs, $tableDiff);
         }
 
+        /* don't scan for tables that exists in target but in source
         $deletedTables = array_diff($targetTables, $sourceTables);
         foreach ($deletedTables as $table) {
             $diffs[] = new DropTable($table, $this->manager->getDB('target'));
         }
+        */
 
         return $diffs;
     }

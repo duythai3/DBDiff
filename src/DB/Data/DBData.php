@@ -11,7 +11,7 @@ class DBData {
     function __construct($manager) {
         $this->manager = $manager;
     }
-    
+
     function getDiff() {
         $params = ParamsFactory::get();
 
@@ -20,13 +20,19 @@ class DBData {
         // Tables
         $tableData = new TableData($this->manager);
 
-        $sourceTables = $this->manager->getTables('source');
+        $sourceTables = $params->tablesToScanForData;
         $targetTables = $this->manager->getTables('target');
 
+        // when scanning for differences in data, only scan tables specified in the config file
+
+        // for scanning all tables except ignore tables, use code below
+        /*
+        $sourceTables = $this->manager->getTables('source');
         if (isset($params->tablesToIgnore)) {
             $sourceTables = array_diff($sourceTables, $params->tablesToIgnore);
             $targetTables = array_diff($targetTables, $params->tablesToIgnore);
         }
+        */
 
         $commonTables = array_intersect($sourceTables, $targetTables);
         foreach ($commonTables as $table) {
@@ -38,6 +44,7 @@ class DBData {
             }
         }
 
+        /*
         $addedTables = array_diff($sourceTables, $targetTables);
         foreach ($addedTables as $table) {
             $diffs = $tableData->getNewData($table);
@@ -49,6 +56,7 @@ class DBData {
             $diffs = $tableData->getOldData($table);
             $diffSequence = array_merge($diffSequence, $diffs);
         }
+        */
 
         return $diffSequence;
     }
