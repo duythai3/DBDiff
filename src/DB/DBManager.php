@@ -73,4 +73,9 @@ class DBManager {
         return $ukey;
     }
 
+    public function getTriggers($connection) {
+        $dbName = $this->getDB($connection)->getDatabaseName();
+        return $this->getDB($connection)->select("select trigger_name, action_statement from information_schema.triggers where TRIGGER_SCHEMA = '$dbName'");
+    }
+
 }
