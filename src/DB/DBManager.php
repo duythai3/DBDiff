@@ -14,6 +14,7 @@ class DBManager {
         foreach ($params->input as $key => $input) {
             if ($key === 'kind') continue;
             $server = $params->{$input['server']};
+            //echo "\r\nhost={$server['host']}, username={$server['user']}, password={$server['password']}";
             $db = $input['db'];
             $this->capsule->addConnection([
                 'driver'    => 'mysql',

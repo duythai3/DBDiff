@@ -25,6 +25,26 @@ class DBSchema {
 
         $diffs = [];
 
+        // Tables
+        $tableSchema = new TableSchema($this->manager);
+        $sourceTables = $this->manager->getTables('source');
+        $targetTables = $this->manager->getTables('target');
+        if (isset($params->tablesToIgnore)) {
+            $sourceTables = array_diff($sourceTables, $params->tablesToIgnore);
+            $targetTables = array_diff($targetTables, $params->tablesToIgnore);
+        }
+        //
+        $addedTables = array_diff($sourceTables, $targetTables);
+        foreach ($addedTables as $table) {
+            $diffs[] = new AddTable($table, $this->manager->getDB('source'));
+        }
+        //
+        $commonTables = array_intersect($sourceTables, $targetTables);
+        foreach ($commonTables as $table) {
+            $tableDiff = $tableSchema->getDiff($table);
+            $diffs = array_merge($diffs, $tableDiff);
+        }
+
         // Collation
         $dbName = $this->manager->getDB('target')->getDatabaseName();
         $sourceCollation = $this->getDBVariable('source', 'collation_database');
@@ -38,30 +58,6 @@ class DBSchema {
         $targetCharset = $this->getDBVariable('target', 'character_set_database');
         if ($sourceCharset !== $targetCharset) {
             $diffs[] = new SetDBCharset($dbName, $sourceCharset, $targetCharset);
-        }
-
-        // Tables
-        $tableSchema = new TableSchema($this->manager);
-
-        $sourceTables = $this->manager->getTables('source');
-        $targetTables = $this->manager->getTables('target');
-
-        if (isset($params->tablesToIgnore)) {
-            $sourceTables = array_diff($sourceTables, $params->tablesToIgnore);
-            $targetTables = array_diff($targetTables, $params->tablesToIgnore);
-        }
-
-        //
-        $addedTables = array_diff($sourceTables, $targetTables);
-        foreach ($addedTables as $table) {
-            $diffs[] = new AddTable($table, $this->manager->getDB('source'));
-        }
-
-        //
-        $commonTables = array_intersect($sourceTables, $targetTables);
-        foreach ($commonTables as $table) {
-            $tableDiff = $tableSchema->getDiff($table);
-            $diffs = array_merge($diffs, $tableDiff);
         }
 
         // triggers
@@ -125,8 +121,8 @@ class DBSchema {
         $commonTriggerNames = array_intersect($sourceTriggerNames, $targetTriggerNames);
         $updatedTriggerNames = [];
         foreach ($commonTriggerNames as $triggerName) {
-            $sourceActionStatement = $sourceActionStatements[$triggerName];
-            $targetActionStatement = $targetActionStatements[$triggerName];
+            $sourceActionStatement = strtolower($sourceActionStatements[$triggerName]);
+            $targetActionStatement = strtolower($targetActionStatements[$triggerName]);
             if ($sourceActionStatement !== $targetActionStatement) {
                 $updatedTriggerNames[] = $triggerName;
             }
