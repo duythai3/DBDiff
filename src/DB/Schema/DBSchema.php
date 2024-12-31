@@ -99,7 +99,7 @@ class DBSchema {
         return array_diff($sourceTriggerNames, $targetTriggerNames);
     }
 
-    protected function getUpdatedTriggers($sourceTriggers, $targetTriggers) {
+    protected function getUpdatedTriggers_old($sourceTriggers, $targetTriggers) {
         $sourceTriggerNames = [];
         $targetTriggerNames = [];
         $sourceActionStatements = [];
@@ -117,6 +117,33 @@ class DBSchema {
             $res = $this->manager->getDB('target')->select("SHOW CREATE TRIGGER `$triggerName`");
             $stm = $res[0]['SQL Original Statement'];
             $targetActionStatements[$triggerName] = $stm;
+        }
+        $commonTriggerNames = array_intersect($sourceTriggerNames, $targetTriggerNames);
+        $updatedTriggerNames = [];
+        foreach ($commonTriggerNames as $triggerName) {
+            $sourceActionStatement = strtolower($sourceActionStatements[$triggerName]);
+            $targetActionStatement = strtolower($targetActionStatements[$triggerName]);
+            if ($sourceActionStatement !== $targetActionStatement) {
+                $updatedTriggerNames[] = $triggerName;
+            }
+        }
+        return $updatedTriggerNames;
+    }
+
+    protected function getUpdatedTriggers($sourceTriggers, $targetTriggers) {
+        $sourceTriggerNames = [];
+        $targetTriggerNames = [];
+        $sourceActionStatements = [];
+        $targetActionStatements = [];
+        foreach ($sourceTriggers as $trigger) {
+            $triggerName = $trigger['trigger_name'];
+            $sourceTriggerNames[] = $triggerName;
+            $sourceActionStatements[$triggerName] = $trigger['action_statement'];
+        }
+        foreach ($targetTriggers as $trigger) {
+            $triggerName = $trigger['trigger_name'];
+            $targetTriggerNames[] = $triggerName;
+            $targetActionStatements[$triggerName] = $trigger['action_statement'];
         }
         $commonTriggerNames = array_intersect($sourceTriggerNames, $targetTriggerNames);
         $updatedTriggerNames = [];
