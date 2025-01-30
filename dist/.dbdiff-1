@@ -1,0 +1,29 @@
+server1:
+        user: duy
+        password: pl3190+ubtSJ%
+        port: 3306
+        host: 143.198.227.184
+server2:
+        user: opr
+        password: opr2011
+        port: 3306
+        host: 192.168.3.6
+        
+#template: templates/simple-db-migrate.tmpl
+type: all
+include: up
+nocomments: true
+tablesToIgnore:
+ - table1
+ - table2
+ - table3
+fieldsToIgnore:
+   table1:
+      - field1
+      - field2
+      - field3
+   table2:
+      - field1
+      - field4
+tablesToScanForData:
+  - setting

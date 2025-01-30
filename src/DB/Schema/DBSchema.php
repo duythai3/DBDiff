@@ -1,6 +1,7 @@
 <?php namespace DBDiff\DB\Schema;
 
 use DBDiff\Diff\AddTrigger;
+use DBDiff\Diff\DropTrigger;
 use DBDiff\Diff\UpdatedTrigger;
 use DBDiff\Logger;
 use Diff\Differ\ListDiffer;
@@ -60,6 +61,12 @@ class DBSchema {
             $diffs[] = new SetDBCharset($dbName, $sourceCharset, $targetCharset);
         }
 
+        // drop table
+        $deletedTables = array_diff($targetTables, $sourceTables);
+        foreach ($deletedTables as $table) {
+            $diffs[] = new DropTable($table, $this->manager->getDB('target'));
+        }
+
         // triggers
         $sourceTriggers = $this->manager->getTriggers('source');
         $targetTriggers = $this->manager->getTriggers('target');
@@ -71,14 +78,13 @@ class DBSchema {
         foreach ($updatedTriggerNames as $updatedTriggerName) {
             $diffs[] = new UpdatedTrigger($updatedTriggerName, $this->manager->getDB('source'));
         }
-
-        /* don't scan for tables that exists in target but in source
-        $deletedTables = array_diff($targetTables, $sourceTables);
-        foreach ($deletedTables as $table) {
-            $diffs[] = new DropTable($table, $this->manager->getDB('target'));
+        $deletedTriggers = $this->getDropTriggers($sourceTriggers, $targetTriggers);
+        foreach ($deletedTriggers as $trigger) {
+            Logger::info("Deleted trigger:$trigger");
+            $diffs[] = new DropTrigger($trigger, $this->manager->getDB('target'));
         }
-        */
 
+        //
         return $diffs;
     }
 
@@ -148,13 +154,41 @@ class DBSchema {
         $commonTriggerNames = array_intersect($sourceTriggerNames, $targetTriggerNames);
         $updatedTriggerNames = [];
         foreach ($commonTriggerNames as $triggerName) {
-            $sourceActionStatement = strtolower($sourceActionStatements[$triggerName]);
-            $targetActionStatement = strtolower($targetActionStatements[$triggerName]);
-            if ($sourceActionStatement !== $targetActionStatement) {
+            $sourceActionStatement = trim(strtolower($sourceActionStatements[$triggerName]));
+            $targetActionStatement = trim(strtolower($targetActionStatements[$triggerName]));
+            if (strcmp($sourceActionStatement, $targetActionStatement) !== 0) {
+                Logger::info('var_dump:');
+                var_dump($sourceActionStatement);
+                var_dump($targetActionStatement);
+                Logger::info("updated trigger:$triggerName");
+                Logger::info("sourceActionStatement:$sourceActionStatement");
+                Logger::info("targetActionStatement:$targetActionStatement");
                 $updatedTriggerNames[] = $triggerName;
             }
         }
         return $updatedTriggerNames;
+    }
+
+    protected function strdiff($a,$b){
+        $a = explode(" ", $a);
+        $b = explode(" ", $b);
+        $c = array_diff($a,$b);
+        return implode(":", $c);
+
+    }
+
+    protected function getDropTriggers($sourceTriggers, $targetTriggers) {
+        $sourceTriggerNames = [];
+        $targetTriggerNames = [];
+        foreach ($sourceTriggers as $trigger) {
+            $triggerName = $trigger['trigger_name'];
+            $sourceTriggerNames[] = $triggerName;
+        }
+        foreach ($targetTriggers as $trigger) {
+            $triggerName = $trigger['trigger_name'];
+            $targetTriggerNames[] = $triggerName;
+        }
+        return array_diff($targetTriggerNames, $sourceTriggerNames);
     }
 
 }
