@@ -154,9 +154,12 @@ class DBSchema {
         $commonTriggerNames = array_intersect($sourceTriggerNames, $targetTriggerNames);
         $updatedTriggerNames = [];
         foreach ($commonTriggerNames as $triggerName) {
-            $sourceActionStatement = trim(strtolower($sourceActionStatements[$triggerName]));
-            $targetActionStatement = trim(strtolower($targetActionStatements[$triggerName]));
-            if (strcmp($sourceActionStatement, $targetActionStatement) !== 0) {
+            $sourceActionStatement = strtolower($sourceActionStatements[$triggerName]);
+            $targetActionStatement = strtolower($targetActionStatements[$triggerName]);
+            $sourceActionStatement = preg_replace('/\s+/', '', $sourceActionStatement);
+            $targetActionStatement = preg_replace('/\s+/', '', $targetActionStatement);
+
+            if (strcmp($targetActionStatement, $targetActionStatement) !== 0) {
                 Logger::info('var_dump:');
                 var_dump($sourceActionStatement);
                 var_dump($targetActionStatement);
