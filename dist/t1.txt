@@ -1,4 +1,0 @@
-begin
-    insert into group39_dl_item_changes (itemid, name, checked, checkerid, checktime, creationtime, creationid, assigneeid, assignerid, assigntime, status, statustime, statusid, listid, listtype, mailinglists, disabled, activated, activatetime)
-    values (0, new.name, new.checked, new.checkerid, new.checktime, new.creationtime, new.creationid, new.assigneeid, new.assignerid, new.assigntime, new.status, new.statustime, new.statusid, new.listid, new.listtype, new.mailinglists, new.disabled, new.activated, new.activatetime);
-end
