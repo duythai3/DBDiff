@@ -29,3 +29,5 @@ fieldsToIgnore:
 tablesToScanForData:
   - setting
   - ship_settings
+  - group22_setting
+  - group21_v2_setting
